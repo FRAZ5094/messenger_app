@@ -8,3 +8,5 @@ CREATE TABLE messages(
 );
 
 INSERT INTO messages(content) VALUES ('my balls');
+INSERT INTO messages(content) VALUES ('message two');
+
