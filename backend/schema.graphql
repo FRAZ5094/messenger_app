@@ -17,6 +17,35 @@ type Query implements Node {
     nodeId: ID!
   ): Node
 
+  """Reads and enables pagination through a set of `MessageAppUser`."""
+  messageAppUsers(
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """The method to use when ordering `MessageAppUser`."""
+    orderBy: [MessageAppUsersOrderBy!] = [PRIMARY_KEY_ASC]
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: MessageAppUserCondition
+  ): MessageAppUsersConnection
+
   """Reads and enables pagination through a set of `Message`."""
   messages(
     """Only read the first `n` values of the set."""
@@ -45,7 +74,16 @@ type Query implements Node {
     """
     condition: MessageCondition
   ): MessagesConnection
+  messageAppUser(id: Int!): MessageAppUser
   message(id: Int!): Message
+
+  """Reads a single `MessageAppUser` using its globally unique `ID`."""
+  messageAppUserByNodeId(
+    """
+    The globally unique `ID` to be used in selecting a single `MessageAppUser`.
+    """
+    nodeId: ID!
+  ): MessageAppUser
 
   """Reads a single `Message` using its globally unique `ID`."""
   messageByNodeId(
@@ -60,6 +98,91 @@ interface Node {
   A globally unique identifier. Can be used in various places throughout the system to identify this single value.
   """
   nodeId: ID!
+}
+
+"""A connection to a list of `MessageAppUser` values."""
+type MessageAppUsersConnection {
+  """A list of `MessageAppUser` objects."""
+  nodes: [MessageAppUser!]!
+
+  """
+  A list of edges which contains the `MessageAppUser` and cursor to aid in pagination.
+  """
+  edges: [MessageAppUsersEdge!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """The count of *all* `MessageAppUser` you could get from the connection."""
+  totalCount: Int!
+}
+
+type MessageAppUser implements Node {
+  """
+  A globally unique identifier. Can be used in various places throughout the system to identify this single value.
+  """
+  nodeId: ID!
+  id: Int!
+  name: String!
+  fcmtoken: String
+
+  """Reads and enables pagination through a set of `Message`."""
+  messagesBySenderid(
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """The method to use when ordering `Message`."""
+    orderBy: [MessagesOrderBy!] = [PRIMARY_KEY_ASC]
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: MessageCondition
+  ): MessagesConnection!
+
+  """Reads and enables pagination through a set of `Message`."""
+  messagesByRecieverid(
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """The method to use when ordering `Message`."""
+    orderBy: [MessagesOrderBy!] = [PRIMARY_KEY_ASC]
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: MessageCondition
+  ): MessagesConnection!
 }
 
 """A connection to a list of `Message` values."""
@@ -86,6 +209,14 @@ type Message implements Node {
   nodeId: ID!
   id: Int!
   content: String!
+  senderid: Int
+  recieverid: Int
+
+  """Reads a single `MessageAppUser` that is related to this `Message`."""
+  messageAppUserBySenderid: MessageAppUser
+
+  """Reads a single `MessageAppUser` that is related to this `Message`."""
+  messageAppUserByRecieverid: MessageAppUser
 }
 
 """A `Message` edge in the connection."""
@@ -120,6 +251,10 @@ enum MessagesOrderBy {
   NATURAL
   ID_ASC
   ID_DESC
+  SENDERID_ASC
+  SENDERID_DESC
+  RECIEVERID_ASC
+  RECIEVERID_DESC
   PRIMARY_KEY_ASC
   PRIMARY_KEY_DESC
 }
@@ -130,12 +265,58 @@ A condition to be used against `Message` object types. All fields are tested for
 input MessageCondition {
   """Checks for equality with the object’s `id` field."""
   id: Int
+
+  """Checks for equality with the object’s `senderid` field."""
+  senderid: Int
+
+  """Checks for equality with the object’s `recieverid` field."""
+  recieverid: Int
+}
+
+"""A `MessageAppUser` edge in the connection."""
+type MessageAppUsersEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `MessageAppUser` at the end of the edge."""
+  node: MessageAppUser!
+}
+
+"""Methods to use when ordering `MessageAppUser`."""
+enum MessageAppUsersOrderBy {
+  NATURAL
+  ID_ASC
+  ID_DESC
+  NAME_ASC
+  NAME_DESC
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+}
+
+"""
+A condition to be used against `MessageAppUser` object types. All fields are
+tested for equality and combined with a logical ‘and.’
+"""
+input MessageAppUserCondition {
+  """Checks for equality with the object’s `id` field."""
+  id: Int
+
+  """Checks for equality with the object’s `name` field."""
+  name: String
 }
 
 """
 The root mutation type which contains root level fields which mutate data.
 """
 type Mutation {
+  """Creates a single `MessageAppUser`."""
+  createMessageAppUser(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: CreateMessageAppUserInput!
+  ): CreateMessageAppUserPayload
+
   """Creates a single `Message`."""
   createMessage(
     """
@@ -143,6 +324,24 @@ type Mutation {
     """
     input: CreateMessageInput!
   ): CreateMessagePayload
+
+  """
+  Updates a single `MessageAppUser` using its globally unique id and a patch.
+  """
+  updateMessageAppUserByNodeId(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: UpdateMessageAppUserByNodeIdInput!
+  ): UpdateMessageAppUserPayload
+
+  """Updates a single `MessageAppUser` using a unique key and a patch."""
+  updateMessageAppUser(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: UpdateMessageAppUserInput!
+  ): UpdateMessageAppUserPayload
 
   """Updates a single `Message` using its globally unique id and a patch."""
   updateMessageByNodeId(
@@ -159,6 +358,22 @@ type Mutation {
     """
     input: UpdateMessageInput!
   ): UpdateMessagePayload
+
+  """Deletes a single `MessageAppUser` using its globally unique id."""
+  deleteMessageAppUserByNodeId(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: DeleteMessageAppUserByNodeIdInput!
+  ): DeleteMessageAppUserPayload
+
+  """Deletes a single `MessageAppUser` using a unique key."""
+  deleteMessageAppUser(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: DeleteMessageAppUserInput!
+  ): DeleteMessageAppUserPayload
 
   """Deletes a single `Message` using its globally unique id."""
   deleteMessageByNodeId(
@@ -177,6 +392,48 @@ type Mutation {
   ): DeleteMessagePayload
 }
 
+"""The output of our create `MessageAppUser` mutation."""
+type CreateMessageAppUserPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """The `MessageAppUser` that was created by this mutation."""
+  messageAppUser: MessageAppUser
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """An edge for our `MessageAppUser`. May be used by Relay 1."""
+  messageAppUserEdge(
+    """The method to use when ordering `MessageAppUser`."""
+    orderBy: [MessageAppUsersOrderBy!] = [PRIMARY_KEY_ASC]
+  ): MessageAppUsersEdge
+}
+
+"""All input for the create `MessageAppUser` mutation."""
+input CreateMessageAppUserInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """The `MessageAppUser` to be created by this mutation."""
+  messageAppUser: MessageAppUserInput!
+}
+
+"""An input for mutations affecting `MessageAppUser`"""
+input MessageAppUserInput {
+  id: Int
+  name: String!
+  fcmtoken: String
+}
+
 """The output of our create `Message` mutation."""
 type CreateMessagePayload {
   """
@@ -192,6 +449,12 @@ type CreateMessagePayload {
   Our root query field type. Allows us to run any query from our mutation payload.
   """
   query: Query
+
+  """Reads a single `MessageAppUser` that is related to this `Message`."""
+  messageAppUserBySenderid: MessageAppUser
+
+  """Reads a single `MessageAppUser` that is related to this `Message`."""
+  messageAppUserByRecieverid: MessageAppUser
 
   """An edge for our `Message`. May be used by Relay 1."""
   messageEdge(
@@ -216,6 +479,74 @@ input CreateMessageInput {
 input MessageInput {
   id: Int
   content: String!
+  senderid: Int
+  recieverid: Int
+}
+
+"""The output of our update `MessageAppUser` mutation."""
+type UpdateMessageAppUserPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """The `MessageAppUser` that was updated by this mutation."""
+  messageAppUser: MessageAppUser
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """An edge for our `MessageAppUser`. May be used by Relay 1."""
+  messageAppUserEdge(
+    """The method to use when ordering `MessageAppUser`."""
+    orderBy: [MessageAppUsersOrderBy!] = [PRIMARY_KEY_ASC]
+  ): MessageAppUsersEdge
+}
+
+"""All input for the `updateMessageAppUserByNodeId` mutation."""
+input UpdateMessageAppUserByNodeIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  The globally unique `ID` which will identify a single `MessageAppUser` to be updated.
+  """
+  nodeId: ID!
+
+  """
+  An object where the defined keys will be set on the `MessageAppUser` being updated.
+  """
+  patch: MessageAppUserPatch!
+}
+
+"""
+Represents an update to a `MessageAppUser`. Fields that are set will be updated.
+"""
+input MessageAppUserPatch {
+  id: Int
+  name: String
+  fcmtoken: String
+}
+
+"""All input for the `updateMessageAppUser` mutation."""
+input UpdateMessageAppUserInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  An object where the defined keys will be set on the `MessageAppUser` being updated.
+  """
+  patch: MessageAppUserPatch!
+  id: Int!
 }
 
 """The output of our update `Message` mutation."""
@@ -233,6 +564,12 @@ type UpdateMessagePayload {
   Our root query field type. Allows us to run any query from our mutation payload.
   """
   query: Query
+
+  """Reads a single `MessageAppUser` that is related to this `Message`."""
+  messageAppUserBySenderid: MessageAppUser
+
+  """Reads a single `MessageAppUser` that is related to this `Message`."""
+  messageAppUserByRecieverid: MessageAppUser
 
   """An edge for our `Message`. May be used by Relay 1."""
   messageEdge(
@@ -266,6 +603,8 @@ Represents an update to a `Message`. Fields that are set will be updated.
 input MessagePatch {
   id: Int
   content: String
+  senderid: Int
+  recieverid: Int
 }
 
 """All input for the `updateMessage` mutation."""
@@ -280,6 +619,54 @@ input UpdateMessageInput {
   An object where the defined keys will be set on the `Message` being updated.
   """
   patch: MessagePatch!
+  id: Int!
+}
+
+"""The output of our delete `MessageAppUser` mutation."""
+type DeleteMessageAppUserPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """The `MessageAppUser` that was deleted by this mutation."""
+  messageAppUser: MessageAppUser
+  deletedMessageAppUserNodeId: ID
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """An edge for our `MessageAppUser`. May be used by Relay 1."""
+  messageAppUserEdge(
+    """The method to use when ordering `MessageAppUser`."""
+    orderBy: [MessageAppUsersOrderBy!] = [PRIMARY_KEY_ASC]
+  ): MessageAppUsersEdge
+}
+
+"""All input for the `deleteMessageAppUserByNodeId` mutation."""
+input DeleteMessageAppUserByNodeIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  The globally unique `ID` which will identify a single `MessageAppUser` to be deleted.
+  """
+  nodeId: ID!
+}
+
+"""All input for the `deleteMessageAppUser` mutation."""
+input DeleteMessageAppUserInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
   id: Int!
 }
 
@@ -299,6 +686,12 @@ type DeleteMessagePayload {
   Our root query field type. Allows us to run any query from our mutation payload.
   """
   query: Query
+
+  """Reads a single `MessageAppUser` that is related to this `Message`."""
+  messageAppUserBySenderid: MessageAppUser
+
+  """Reads a single `MessageAppUser` that is related to this `Message`."""
+  messageAppUserByRecieverid: MessageAppUser
 
   """An edge for our `Message`. May be used by Relay 1."""
   messageEdge(

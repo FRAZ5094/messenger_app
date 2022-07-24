@@ -2,7 +2,52 @@ const express = require("express");
 const { postgraphile } = require("postgraphile");
 const app = express();
 const cors = require("cors");
+const { Client } = require("pg");
 require("dotenv").config();
+
+var admin = require("firebase-admin");
+
+var serviceAccount = require(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+
+
+const client = new Client ({
+  connectionString: process.env.DATABASE_URL
+});
+
+client.connect((err, client, done ) => {
+  if (err){
+    console.log("Error in pg connecting to database", err);
+  } else {
+    console.log("pg connected to Database");
+    client.on('notification', (msg) => {
+      console.log("PAYLOAD FROM DATABASE", msg.payload);
+      let json_payload = JSON.parse(msg.payload);
+      //get from database
+      let fcmToken = "dx1fshAwQbK6EXBFebjWwE:APA91bFICOYkhZdzbYYnzZpj9cBBlW50thRLhz1EVu3lonvKwGapTwFUy7RIaYJvGhoGIAj8x0T36Yp-SMY9M-ZMe11drhH3GfP7oo17rZZcARMpKe_ebgvX7y9M7aAa8p2fuPNOJzbf"
+      let senderid = json_payload.senderid;
+      client.query(`SELECT name FROM message_app_users WHERE id=${senderid}`, (err, res) => {
+        if (!err){
+          let senderName=String(res.rows[0].name);
+          let messageContents = String(json_payload.content);
+          admin.messaging().sendToDevice(
+            fcmToken,
+            {notification: {title: senderName, body : messageContents}},
+            {contentAvailable: true, priority: "high"});
+
+        } else {
+          console.log("Error getting senderName from senderid: ", err);
+        }
+        client.end;
+      });
+
+    });
+    const query = client.query("LISTEN message_notification");
+  }
+});
 
 const postgraphileOptions = {
   subscriptions: true,
