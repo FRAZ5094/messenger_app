@@ -27,7 +27,7 @@ client.connect((err, client, done ) => {
       console.log("PAYLOAD FROM DATABASE", msg.payload);
       let json_payload = JSON.parse(msg.payload);
       //get from database
-      let fcmToken = "dx1fshAwQbK6EXBFebjWwE:APA91bFICOYkhZdzbYYnzZpj9cBBlW50thRLhz1EVu3lonvKwGapTwFUy7RIaYJvGhoGIAj8x0T36Yp-SMY9M-ZMe11drhH3GfP7oo17rZZcARMpKe_ebgvX7y9M7aAa8p2fuPNOJzbf"
+      let fcmToken = "fdX6LCMgT0ecUrgsnJVGg5:APA91bFVwva0BwfZjxwdn4cHiFdUycSnSzY1bkjAqfbkrhlSLaDbGfPYenu2m7MMbZ0tCfyPLYB5GPFoUp237rnKNy2pe75zUfnVY7ALiww6zahUAE3g4Dohgw-Ud5z5ksaPGITskMiq"
       let senderid = json_payload.senderid;
       client.query(`SELECT name FROM message_app_users WHERE id=${senderid}`, (err, res) => {
         if (!err){
